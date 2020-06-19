@@ -50,49 +50,49 @@ namespace DatingApp.API.Controllers
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(UserForLoginDto userforLoginDto)
-        {
-            //Check if we have this user
-            var userFromRepo = await _repo.Login(userforLoginDto.Username.ToLower(), userforLoginDto.Password);
+        {                
+                //Check if we have this user
+                var userFromRepo = await _repo.Login(userforLoginDto.Username.ToLower(), userforLoginDto.Password);
 
-            if (userFromRepo == null) return Unauthorized();
+                if (userFromRepo == null) return Unauthorized();
 
-            //Updating Last Login
-            userFromRepo.LastLogin = DateTime.Now;
-            await _context.SaveChangesAsync();
-            
-            //Token Building Token
-            var claims = new[]
-            {
-                //One claim is ID
-                new Claim(ClaimTypes.NameIdentifier, userFromRepo.Id.ToString()),
-                //The other claim is username
-                new Claim(ClaimTypes.Name, userFromRepo.Username)
-            };
+                //Updating Last Login
+                userFromRepo.LastLogin = DateTime.Now;
+                await _context.SaveChangesAsync();
+                
+                //Token Building Token
+                var claims = new[]
+                {
+                    //One claim is ID
+                    new Claim(ClaimTypes.NameIdentifier, userFromRepo.Id.ToString()),
+                    //The other claim is username
+                    new Claim(ClaimTypes.Name, userFromRepo.Username)
+                };
 
-            //Get our key stored in app settings and encode it
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.GetSection("AppSettings:Token").Value));
+                //Get our key stored in app settings and encode it
+                var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config.GetSection("AppSettings:Token").Value));
 
-            //Creating signing in creds from the key
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+                //Creating signing in creds from the key
+                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
-            //We create a token descriptor containing the claims, expiry date and creds created above
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now.AddDays(1),
-                SigningCredentials = creds
-            };
+                //We create a token descriptor containing the claims, expiry date and creds created above
+                var tokenDescriptor = new SecurityTokenDescriptor
+                {
+                    Subject = new ClaimsIdentity(claims),
+                    Expires = DateTime.Now.AddDays(1),
+                    SigningCredentials = creds
+                };
 
-            //Prep a tokenHandler
-            var tokenHandler = new JwtSecurityTokenHandler();
+                //Prep a tokenHandler
+                var tokenHandler = new JwtSecurityTokenHandler();
 
-            //Give it the descriptor (with all data) and creating the token!
-            var token = tokenHandler.CreateToken(tokenDescriptor);
+                //Give it the descriptor (with all data) and creating the token!
+                var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            return Ok(new
-            {
-                token = tokenHandler.WriteToken(token)
-            });
+                return Ok(new
+                {
+                    token = tokenHandler.WriteToken(token)
+                });
         }
     }
 }
