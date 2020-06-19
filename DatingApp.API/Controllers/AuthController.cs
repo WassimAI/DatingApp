@@ -19,8 +19,10 @@ namespace DatingApp.API.Controllers
     {
         private readonly IAuthRepository _repo;
         private readonly IConfiguration _config;
-        public AuthController(IAuthRepository repo, IConfiguration config)
+        private readonly DataContext _context;
+        public AuthController(IAuthRepository repo, IConfiguration config, DataContext context)
         {
+            _context = context;
             _config = config;
             _repo = repo;
         }
@@ -38,6 +40,7 @@ namespace DatingApp.API.Controllers
             var userToCreate = new User
             {
                 Username = userForRegisterDto.Username,
+                LastLogin = DateTime.Now
             };
 
             var createdUser = await _repo.Register(userToCreate, userForRegisterDto.Password);
@@ -53,6 +56,10 @@ namespace DatingApp.API.Controllers
 
             if (userFromRepo == null) return Unauthorized();
 
+            //Updating Last Login
+            userFromRepo.LastLogin = DateTime.Now;
+            await _context.SaveChangesAsync();
+            
             //Token Building Token
             var claims = new[]
             {
@@ -71,7 +78,7 @@ namespace DatingApp.API.Controllers
             //We create a token descriptor containing the claims, expiry date and creds created above
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject= new ClaimsIdentity(claims),
+                Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.Now.AddDays(1),
                 SigningCredentials = creds
             };
@@ -82,8 +89,9 @@ namespace DatingApp.API.Controllers
             //Give it the descriptor (with all data) and creating the token!
             var token = tokenHandler.CreateToken(tokenDescriptor);
 
-            return Ok(new {
-                token= tokenHandler.WriteToken(token)
+            return Ok(new
+            {
+                token = tokenHandler.WriteToken(token)
             });
         }
     }
