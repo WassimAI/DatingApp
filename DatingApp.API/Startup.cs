@@ -68,8 +68,8 @@ namespace DatingApp.API
 
                         if(error != null)
                         {
-                            context.Response.AddApplicationError(error.Error.Message);
-                            await context.Response.WriteAsync(error.Error.Message);
+                            context.Response.AddApplicationError(error.Error.Message + "This is application error showing error.Error.message");
+                            await context.Response.WriteAsync(error.Error.Message + "This is the writeasync showing error.Error.message");
                         }
                     });
                 });
