@@ -40,15 +40,16 @@ namespace DatingApp.API.Controllers
 
             if (await _repo.UserExists(userForRegisterDto.Username)) return BadRequest("Username aready exists");
 
-            var userToCreate = new User
-            {
-                Username = userForRegisterDto.Username,
-                LastLogin = DateTime.Now
-            };
+            //user is desctination and userForRegisterDto is source
+            var userToCreate = _mapper.Map<User>(userForRegisterDto);
 
             var createdUser = await _repo.Register(userToCreate, userForRegisterDto.Password);
 
-            return StatusCode(201);//This is the status code to createdAtRoute
+            //This user to return is simply of type userForDetailedDto, so that we do not return the actual user from DB
+            var userToReturn = _mapper.Map<UserForDetailedDto>(createdUser);
+
+            //we return the route + user we created
+            return CreatedAtRoute("GetUser", new {Controller = "Users", id= createdUser.Id}, userToReturn); //This is the status code to createdAtRoute
         }
 
         [HttpPost("login")]
