@@ -81,13 +81,14 @@ namespace DatingApp.API.Controllers
 
             photoForCreationDto.Url = uploadResult.SecureUrl.AbsoluteUri.ToString();
             photoForCreationDto.PublicId = uploadResult.PublicId;
+            photoForCreationDto.IsApproved = false;
 
             var photo = _mapper.Map<Photo>(photoForCreationDto);
 
-            if(!userFromRepo.Photos.Any(x=> x.IsMain))
-            {
-                photo.IsMain = true;
-            }
+            // if(!userFromRepo.Photos.Any(x=> x.IsMain))
+            // {
+            //     photo.IsMain = true;
+            // }
 
             userFromRepo.Photos.Add(photo);
 

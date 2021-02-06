@@ -1,1 +1,5 @@
-<p>photo-management works!</p>
+<div *ngFor="let user of users">
+    <p *ngFor="let photo of user.photos">
+        <span>{{photo.url}}</span><span><a (click)="approvePhoto(photo.id)" class="btn btn-success">Approve</a></span>
+    </p>
+</div>

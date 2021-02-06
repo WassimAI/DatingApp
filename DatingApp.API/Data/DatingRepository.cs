@@ -23,7 +23,7 @@ namespace DatingApp.API.Data
 
         public async Task<User> GetUser(int id)
         {
-            var user = await _context.Users.Include(p=>p.Photos).FirstOrDefaultAsync(x=>x.Id==id);
+            var user = await _context.Users.Include(p=>p.Photos).IgnoreQueryFilters().FirstOrDefaultAsync(x=>x.Id==id);
 
             return user;
         }
@@ -35,7 +35,7 @@ namespace DatingApp.API.Data
 
         public async Task<PagedList<User>> GetUsers(UserParams userParams)
         {
-            var users =  _context.Users.Include(x=>x.Photos).OrderByDescending(x=>x.LastLogin).AsQueryable();
+            var users =  _context.Users.Include(x=>x.Photos).IgnoreQueryFilters().OrderByDescending(x=>x.LastLogin).AsQueryable();
 
             //Filtering out the logged in user id and getting the opposite gender of ligged in user
             users = users.Where(x=> x.Id != userParams.userId);

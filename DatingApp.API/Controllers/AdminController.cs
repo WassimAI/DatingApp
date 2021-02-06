@@ -65,9 +65,20 @@ namespace DatingApp.API.Controllers
 
         [Authorize(Policy = "ModeratePhotoRole")]
         [HttpGet("photosForModeration")]
-        public IActionResult GetPhotosForModeration()
+        public async Task<IActionResult> GetPhotosForModeration()
         {
-            return Ok("Admins or moderators can see this");
+            var users = await _context.Users.Include(x=>x.Photos).ToListAsync();
+            return Ok(users);
+        }
+
+        [Authorize(Policy = "ModeratePhotoRole")]
+        [HttpPost("approvePhoto/{id}")]
+        public async Task<IActionResult> ApprovePhoto(int id)
+        {
+            var photoToApprove = await _context.Photos.FirstOrDefaultAsync(x=> x.Id == id);
+            photoToApprove.IsApproved = true;
+            await _context.SaveChangesAsync();
+            return NoContent();
         }
     }
 }
